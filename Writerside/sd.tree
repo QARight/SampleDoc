@@ -4,8 +4,6 @@
 
 <instance-profile id="sd"
                  name="SampleDoc"
-                 start-page="Default-topic.md">
-
-    <toc-element topic="Default-topic.md"/>
+                 start-page="中文.md">
     <toc-element topic="中文.md"/>
 </instance-profile>

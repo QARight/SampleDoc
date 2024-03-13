@@ -1,4 +1,4 @@
-name: 发布公版
+name: 发布文档
 
 on:
   push:
