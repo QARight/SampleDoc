@@ -100,7 +100,7 @@
 
 扫描结果在 [QNBleDeviceDiscoveryListener] 中回调
 
-扫描的一些配置行为请参考[getConfig](#getconfig) 和 [QNConfig]
+扫描的一些配置行为请参考[getConfig] 和 [QNConfig]
 
 #### 参数
 
@@ -124,11 +124,11 @@
 
 #### 参数
 
-| 名称     | 类型                                      | 说明                                                                                  |
-| :------- | :---------------------------------------- | :------------------------------------------------------------------------------------ |
-| device   | [QNBleDevice]         | 需要连接的蓝牙设备。                                                                  |
-| user     | [QNUser]                   | 连接设备时，使用的用户模型，包含了 userId,和用户资料。由 [buildUser](#builduser) 创建 |
-| callback | [QNResultCallback] | 返回连接操作是否调用成功（并非是连接成功）                                            |
+| 名称     | 类型                                      | 说明                                                                                 |
+| :------- | :---------------------------------------- |:-----------------------------------------------------------------------------------|
+| device   | [QNBleDevice]         | 需要连接的蓝牙设备。                                                                         |
+| user     | [QNUser]                   | 连接设备时，使用的用户模型，包含了 userId,和用户资料。由 [buildUser] 创建                                    |
+| callback | [QNResultCallback] | 返回连接操作是否调用成功（并非是连接成功）                                                              |
 
 ### connectUserScaleDevice
 
@@ -247,12 +247,12 @@ SDK 设置对象，其中的设置方式，也是通过 [QNConfig] 完成
 
 #### 参数
 
-| 名称     | 类型                                                | 说明                                                    |
-| :------- | :-------------------------------------------------- | :------------------------------------------------------ |
-| device   | [QNBleDevice]                  | 需要连接的秤设备，可以用[buildDevice](#buildDevice)创建 |
-| user     | [QNUser]                             | 使用的用户模型，可以用[buildUser](#buildUser)创建       |
-| delegate | [QNBleProtocolDelegate]| 协议处理类的辅助类，协助操作蓝牙                        |
-| callback | [QNResultCallback])           | 返回操作是否成功                                        |
+| 名称     | 类型                                                | 说明                                                   |
+| :------- | :-------------------------------------------------- |:-----------------------------------------------------|
+| device   | [QNBleDevice]                  | 需要连接的秤设备，可以用[buildDevice]创建                          |
+| user     | [QNUser]                             | 使用的用户模型，可以用[buildUser]创建                             |
+| delegate | [QNBleProtocolDelegate]| 协议处理类的辅助类，协助操作蓝牙                                     |
+| callback | [QNResultCallback])           | 返回操作是否成功                                             |
 
 #### 返回值
 
