@@ -1,0 +1,395 @@
+# QNBleApi
+
+入口类
+
+## 方法
+
+### initSdk
+
+根据 appid 初始化 SDK，校验 appid 与配置文件。该方法也会加载配置文件中的相关配置。
+
+该方法只需调用一次即可，不要多次调用。建议安卓放在 Application.onCreate 中调用，iOS 放在 AppDelegate 下 didFinishLaunchingWithOptions 这个方法调用。这个方法只执行了轻量级操作，耗时操作都是异步执行，并不会影响 APP 的启动速度。
+
+通常情况下，该方法会发送一个请求到我司服务器，用以更新配置文件中的配置，比如更新算法，更新指标，增加新型号等。这样可以达到在线升级配置的效果。如果明确不希望有此特性，可以跟我司商务沟通关闭该功能（即 SDK 改为离线模式）。另外，如果没有网络，该请求失败后，也不会有影响，SDK 会继续沿用上一次的配置。
+
+> 注意： demo 中的 `123456789` appid 为测试 id, 测试 id 具有不稳定性与随机变化性。接入商与Yolanda达成协议后可以获取独立稳定的 appid。切记测试 Id 不可用于上线应用市场
+
+#### 参数
+
+| 名称          | 类型                                      | 说明                                                                             |
+| :------------ | :---------------------------------------- | :------------------------------------------------------------------------------- |
+| appId         | String                                    | 公司提供给客户的 app_id，通过本地初始化数据包进行校验，安卓 iOS 共用同一个 appid |
+| firstDataFile | String                                    | 配置文件的文件路径，可以传 uri 的形式，也可以传该文件的全路径，该文件包含了      |
+| callback      | [QNResultCallback](./QNResultCallback.md) | 安卓是接口，IOS 用 block 或闭包）回调方法，返回初始化的结果，错误码参考附表。    |
+
+### getCurSystemBleState
+
+获取当前系统蓝牙状态
+
+#### 返回值
+
+类型：int
+
+[当前系统蓝牙状态](./QNBleStateListener.md)
+
+### setSysBleStateListener
+
+设置系统蓝牙状态回调
+
+#### 参数
+
+| 名称     | 类型                                          | 说明                                                      |
+| :------- | :-------------------------------------------- | :-------------------------------------------------------- |
+| listener | [QNBleStateListener](./QNBleStateListener.md) | 监听器，包含一个方法,监听系统蓝牙状态。 |
+
+### setBleDeviceDiscoveryListener
+
+设置扫描回调对象，有扫描结果时，会在设置的监听方法中返回，SDK 只支持一个回调对象，重复设置会覆盖之前的结果。不需要使用时，需要重新设置为 null，否则可能出现内存泄露。
+
+#### 参数
+
+| 名称     | 类型                                                              | 说明                                                      |
+| :------- | :---------------------------------------------------------------- | :-------------------------------------------------------- |
+| listener | [QNBleDeviceDiscoveryListener](./QNBleDeviceDiscoveryListener.md) | 监听器，包含一个方法,扫描到设备时会在这个对象中进行回调。 |
+
+### setBleConnectionChangeListener
+
+设置蓝牙连接变化监听器，SDK 只支持一个回调对象，重复设置会覆盖之前的结果。
+
+#### 参数
+
+| 名称     | 类型                                                                | 说明           |
+| :------- | :------------------------------------------------------------------ | :------------- |
+| listener | [QNBleConnectionChangeListener](./QNBleConnectionChangeListener.md) | 连接变化监听器 |
+
+### setDataListener
+
+设置数据传输监听器
+
+#### 参数
+
+| 名称     | 类型                                                                                                     | 说明                                     |
+| :------- | :------------------------------------------------------------------------------------------------------- | :--------------------------------------- |
+| listener | [QNScaleDataListener](./QNScaleDataListener.md) 或 [QNUserScaleDataListener](./QNUserScaleDataListener.md)) | 测量数据监听接口，所有数据都会在里面回调 |
+
+
+### setBleKitchenListener
+
+设置蓝牙厨房秤监听器
+
+#### 参数
+
+| 名称     | 类型                                                                                                     | 说明                                     |
+| :------- | :------------------------------------------------------------------------------------------------------- | :--------------------------------------- |
+| listener | [QNBleKitchenListener](./QNBleKitchenListener.md) | 蓝牙厨房秤监听器 |
+
+### setLogListener
+
+设置日志信息的监听
+
+#### 参数
+
+| 名称     | 类型                                | 说明           |
+| :------- | :---------------------------------- | :------------- |
+| listener | [QNLogListener](./QNLogListener.md) | 日志信息的监听 |
+
+
+### startBleDeviceDiscovery
+
+开始扫描蓝牙设备，只返Yolanda的设备。遇到错误或蓝牙关闭则自动停止。
+
+扫描结果在 [QNBleDeviceDiscoveryListener](./QNBleDeviceDiscoveryListener.md) 中回调
+
+扫描的一些配置行为请参考[getConfig](#getconfig) 和 [QNConfig](./QNConfig.md)
+
+#### 参数
+
+| 名称     | 类型                                      | 说明                                   |
+| :------- | :---------------------------------------- | :------------------------------------- |
+| callback | [QNResultCallback](./QNResultCallback.md) | 回调对象，返回此次调用启动扫描是否成功 |
+
+### stopBleDeviceDiscovery
+
+停止扫描蓝牙设备，该方法调用系统的停止扫描方法，如果未启动扫描，也需要调用下停止扫描，保证调用该方法后，不会再有扫描对象回调。
+
+#### 参数
+
+| 名称     | 类型                                      | 说明                                   |
+| :------- | :---------------------------------------- | :------------------------------------- |
+| callback | [QNResultCallback](./QNResultCallback.md) | 回调对象，返回此次调用停止扫描是否成功 |
+
+### connectDevice
+
+连接Yolanda蓝牙设备。连接的过程，会在 [QNBleConnectionChangeListener](./QNBleConnectionChangeListener.md) 中回调，测量数据会在 QNScaleDataListener 进行回调
+
+#### 参数
+
+| 名称     | 类型                                      | 说明                                                                                  |
+| :------- | :---------------------------------------- | :------------------------------------------------------------------------------------ |
+| device   | [QNBleDevice](./QNBleDevice.md)           | 需要连接的蓝牙设备。                                                                  |
+| user     | [QNUser](./QNUser.md)                     | 连接设备时，使用的用户模型，包含了 userId,和用户资料。由 [buildUser](#builduser) 创建 |
+| callback | [QNResultCallback](./QNResultCallback.md) | 返回连接操作是否调用成功（并非是连接成功）                                            |
+
+### connectUserScaleDevice
+
+连接Yolanda  用户秤设备。连接的过程，会在 [QNBleConnectionChangeListener](./QNBleConnectionChangeListener.md) 中回调，测量数据会在 QNScaleDataListener 进行回调
+
+#### 参数
+
+| 名称     | 类型                                      | 说明                                       |
+| :------- | :---------------------------------------- | :----------------------------------------- |
+| device   | [QNBleDevice](./QNBleDevice.md)           | 需要连接的蓝牙设备。                       |
+| config   | [QNUserScaleConfig](./QNUserScaleConfig.md)           | 连接用户秤设备时的配置项                    |
+| callback | [QNResultCallback](./QNResultCallback.md) | 返回连接操作是否调用成功（并非是连接成功） |
+
+
+### connectBleKitchenDevice
+
+链接蓝牙厨房秤, 该设备对象必须是搜索返回的蓝牙厨房秤设备对象, 链接方法只针对蓝牙厨房秤有效
+
+#### 参数
+
+| 名称          | 类型                  | 说明                 |
+| :------------ | :-------------------- | :------------------- |
+|device |[QNBleKitchenDevice](./QNBleKitchenDevice.md) | 蓝牙厨房秤设备 |
+| callback   | [QNResultCallback](./QNResultCallback.md) | 返回链接操作是否成功|
+
+
+### setBleKitchenDeviceConfig
+
+设置蓝牙厨房秤秤端配置信息, 在SDK与蓝牙厨房秤保持链接状态下设置有效。
+
+#### 参数
+
+| 名称          | 类型                  | 说明                 |
+| :------------ | :-------------------- | :------------------- |
+|config |[QNBleKitchenConfig](./QNBleKitchenConfig.md)| 蓝牙厨房秤设置信息|
+
+
+### disconnectDevice
+
+断开已连接的Yolanda蓝牙设备。断开连接的过程，会在 [QNBleConnectionChangeListener](./QNBleConnectionChangeListener.md) 中回调
+断开已连接的蓝牙厨房秤设备。断开连接的过程，会在 [QNBleKitchenListener](./QNBleKitchenListener.md) 中回调
+
+#### 参数
+
+| 名称       | 类型                                      | 说明                                                        |
+| :--------- | :---------------------------------------- | :---------------------------------------------------------- |
+| device/mac | [QNBleDevice](./QNBleDevice.md)/String    | 需要断开连接的蓝牙设备或 mac 地址，这两个参数只要穿一个即可 |
+| callback   | [QNResultCallback](./QNResultCallback.md) | 返回连接操作是否调用成功（并非是连接成功）                  |
+
+
+### getConfig
+
+获取 SDK 的当前设置情况
+
+#### 返回值
+
+类型: [QNConfig](./QNConfig.md)
+
+SDK 设置对象，其中的设置方式，也是通过 [QNConfig](./QNConfig.md) 完成
+
+### convertWeightWithTargetUnit
+
+根据提供的 kg 数值的体重，转化为指定单位的数值
+
+> 不支持 st，如果传 st 会直接返回 lb 的数值，即传 lb 或 st 返回一样的值，APP 需要直接转化英石的单位，1st=14lb，比如 145.2lb 会显示成 10 st 5.2 lb.
+
+#### 参数
+
+| 名称     | 类型   | 说明                                                                                                         |
+| :------- | :----- | :----------------------------------------------------------------------------------------------------------- |
+| kgWeight | double | 千克数值的体重                                                                                               |
+| unit     | int    | 0 为 kg，默认值 <br />1 为 lb,磅，所有秤都能够支持这个单位 <br />2 为 斤，秤端如果不支持，则会显示 kg <br /> |
+
+#### 返回值
+
+类型：double
+
+返回指定单位的数值
+
+
+### buildDevice
+
+创建 SDK 蓝牙对象的工厂方法，用来协助支持客户
+
+#### 参数
+
+#### android
+
+| 名称       | 类型                                      | 说明                                                                 |
+| :--------- | :---------------------------------------- | :------------------------------------------------------------------- |
+| device     | BluetoothDevice                           | 调用系统扫描，返回的蓝牙对象                                         |
+| rssi       | int                                       | 调用系统扫描，返回的信号强度                                         |
+| scanRecord | byte[]                                    | 调用系统扫描，返回的蓝牙广播数据                                     |
+| callback   | [QNResultCallback](./QNResultCallback.md) | 返回此次创建设备对象操作是否成功，如果不成功则返回错误码和错误原因。 |
+
+#### ios
+
+| 名称              | 类型                                      | 说明                                                                 |
+| :---------------- | :---------------------------------------- | :------------------------------------------------------------------- |
+| peripheral        | CBPeripheral                              | 外设对象                                                             |
+| advertisementData | [String: Any]                             | 蓝牙广播数据                                                         |
+| callback          | [QNResultCallback](./QNResultCallback.md) | 返回此次创建设备对象操作是否成功，如果不成功则返回错误码和错误原因。 |
+
+#### 返回值
+
+类型 [QNBleDevice](./QNBleDevice.md)
+
+直接返回根据参数所创建的Yolanda设备对象，如果创建不成功则返回 NULL
+
+
+### buildProtocolHandler
+
+创建蓝牙协议处理器，用来协助客户自己管理蓝牙连接
+
+> 自己管理蓝牙连接需要对蓝牙连接相关 API 有一定了解，谨慎使用
+
+#### 参数
+
+| 名称     | 类型                                                | 说明                                                    |
+| :------- | :-------------------------------------------------- | :------------------------------------------------------ |
+| device   | [QNBleDevice](./QNBleDevice.md)                     | 需要连接的秤设备，可以用[buildDevice](#buildDevice)创建 |
+| user     | [QNUser](./QNUser.md)                               | 使用的用户模型，可以用[buildUser](#buildUser)创建       |
+| delegate | [QNBleProtocolDelegate](./QNBleProtocolDelegate.md) | 协议处理类的辅助类，协助操作蓝牙                        |
+| callback | [QNResultCallback](./QNResultCallback.md)           | 返回操作是否成功                                        |
+
+#### 返回值
+
+类型 [QNBleProtocolHandler](./QNBleProtocolHandler.md)
+
+如果创建失败，会返回 null/nil。并在 callback 返回错误码。
+
+### generateScaleData
+
+生成测量数据，如果参数异常，该方法会返回 NUL
+
+#### 参数
+
+| 名称          | 类型                  | 说明                 |
+| :------------ | :-------------------- | :------------------- |
+| user          | [QNUser](./QNUser.md) | 该条数据的所属用户   |
+| modeId        | String                | 型号标识             |
+| weight        | Double                | 体重，单位为 kg      |
+| resistance    | int                   | 50 阻抗值            |
+| secResistance | int                   | 500 阻抗值           |
+| heartRate     | int                   | 心率值，若无则赋值 0 |
+| measureTime   | Date                  | 测量时间             |
+| hmac          | String                | 相关数据签名         |
+
+#### 返回值
+
+类型：[QNScaleData](./QNScaleData.md)
+
+错误时，返回 NULL
+
+
+### physiqueCalculation
+
+推算用户体质数据，如果SDK配置信息中未开启`体质推算`功能选项, 该方法会返回 NUL
+
+
+#### 参数
+
+| 名称          | 类型                  | 说明                 |
+| :------------ | :-------------------- | :------------------- |
+| user          | [QNUser](./QNUser.md) | 该条数据的所属用户   |
+| weight        | Double                | 体重，单位为 kg      |
+| area          | Int                   | 用户所属区域 0: 其他区域 1: 亚洲区域|
+| measureTime   | Date                  | 测量时间             |
+
+#### 返回值
+
+类型：[QNScaleData](./QNScaleData.md)
+
+错误时，返回 NULL
+
+
+### switchUserScaleUser
+
+用户秤设备连接成功后 更新链接用户信息，会在 [QNUserScaleDataListener](./QNUserScaleDataListener.md) 中回调，测量数据会在 QNScaleDataListener 进行回调
+
+#### 参数
+
+| 名称     | 类型                                      | 说明                                       |
+| :------- | :---------------------------------------- | :----------------------------------------- |
+| user          | [QNUser](./QNUser.md) | 用户信息   |
+| callback | [QNResultCallback](./QNResultCallback.md) | 返回更新秤端用户信息操作是否调用成功（并非秤端用户信息已更新） |
+
+### updateUserScaleIdentifyWeight
+
+用于更新用户秤识别用户体重
+
+#### 参数
+
+| 名称     | 类型                                      | 说明                                       |
+| :------- | :---------------------------------------- | :----------------------------------------- |
+| weight          | double | 下发体重   |
+| callback | [QNResultCallback](./QNResultCallback.md) | 返回更新用户秤操作是否调用成功 |
+
+
+### deleteScaleUsers
+
+用于删除用户秤秤端用户信息
+
+#### 参数
+
+| 名称       | 类型                                   | 说明                                |
+| :-------  | :------------------------------------- | :-------------------------------------- |
+| indexList | [int] | 用户索引数组   |
+| callback  | [QNResultCallback](./QNResultCallback.md) | 返回删除用户秤秤端用户信息是否调用成功 |
+
+
+## 蓝牙围度尺相关Api
+
+
+### setBleRulerListener
+
+设置蓝牙围度尺监听
+
+#### 参数
+
+| 名称     | 类型                                | 说明           |
+| :------- | :---------------------------------- | :------------- |
+| listener | [QNBleRulerListener](./QNBleRulerListener.md) | 蓝牙围度尺的监听 |
+
+
+### connectRulerDevice
+
+连接蓝牙围度尺
+
+#### 参数
+
+| 名称       | 类型                                   | 说明                                |
+| :-------  | :------------------------------------- | :-------------------------------------- |
+|device| [QNBleRulerDevice](./QNBleRulerDevice.md)| 发现围度尺设备 |
+| callback | [QNResultCallback](./QNResultCallback.md) | 返回调用连接围度尺方法是否成功 |
+
+
+
+### readAuthDeviceInfoList
+
+读取授权设备信息列表
+
+#### 参数
+
+无
+
+#### 返回值
+
+设备信息集合
+
+### readSDKConfigurationInfo
+
+读取SDK授权配置信息
+
+#### 参数
+
+无
+
+#### 返回值
+
+String
+
+
+

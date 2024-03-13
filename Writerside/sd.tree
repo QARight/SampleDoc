@@ -4,6 +4,6 @@
 
 <instance-profile id="sd"
                  name="SampleDoc"
-                 start-page="中文.md">
-    <toc-element topic="中文.md"/>
+                 start-page="QNBleApi.md">
+    <toc-element topic="QNBleApi.md"/>
 </instance-profile>
